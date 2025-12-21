@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>120LAB — Human as Value</title>
+  <meta name="description" content="120LAB converts real-world human activity into verifiable on-chain value using AI glasses and proof of positive impact." />
+
+  <!-- Favicon (inline SVG) -->
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Cdefs%3E%3CradialGradient%20id='g'%20cx='30%25'%20cy='25%25'%20r='80%25'%3E%3Cstop%20offset='0'%20stop-color='%23A7F3D0'/%3E%3Cstop%20offset='0.55'%20stop-color='%2334D399'/%3E%3Cstop%20offset='1'%20stop-color='%2306B6D4'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect%20width='64'%20height='64'%20rx='16'%20fill='%230b0f14'/%3E%3Cpath%20d='M18%2022%20c10-10%2018-10%2028%200%20c4%204%206%209%206%2014%20c0%205-2%2010-6%2014%20c-10%2010-18%2010-28%200%20c-4-4-6-9-6-14%20c0-5%202-10%206-14Z'%20fill='none'%20stroke='url(%23g)'%20stroke-width='3.2'%20stroke-linecap='round'/%3E%3Cpath%20d='M22%2034%20h7%20l3-8%20l5%2018%20l3-10%20h6'%20fill='none'%20stroke='%23E6FFFB'%20stroke-width='3.2'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E" />
+
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --panel:#0f1620;
+      --panel2:#0c121a;
+      --text:#e8eef7;
+      --muted:#a7b3c6;
+      --line:rgba(255,255,255,.10);
+      --accent1:#34d399;  /* green */
+      --accent2:#06b6d4;  /* cyan */
+      --accent3:#a7f3d0;  /* mint */
+      --shadow: 0 18px 60px rgba(0,0,0,.45);
+      --radius: 22px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:
+        radial-gradient(1100px 700px at 20% -10%, rgba(52,211,153,.22), transparent 55%),
+        radial-gradient(1100px 800px at 95% 5%, rgba(6,182,212,.18), transparent 60%),
+        radial-gradient(900px 700px at 60% 110%, rgba(167,243,208,.12), transparent 55%),
+        var(--bg);
+      color:var(--text);
+      line-height:1.55;
+      letter-spacing:.1px;
+    }
+
+    a{color:inherit; text-decoration:none}
+    .container{width:min(1120px, 92vw); margin:0 auto}
+
+    /* Top bar */
+    header{
+      position:sticky; top:0; z-index:30;
+      backdrop-filter: blur(12px);
+      background: rgba(11,15,20,.72);
+      border-bottom: 1px solid var(--line);
+    }
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 0;
+      gap:14px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      min-width: 220px;
+    }
+    .logo{
+      width:44px; height:44px;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      flex:0 0 auto;
+    }
+    .brand h1{
+      font-size:14px; margin:0; letter-spacing:.16em; text-transform:uppercase;
+    }
+    .brand .sub{
+      margin:2px 0 0;
+      font-size:12px; color:var(--muted);
+    }
+
+    nav{
+      display:flex; align-items:center; gap:18px;
+      flex-wrap:wrap;
+      justify-content:center;
+    }
+    nav a{
+      font-size:13px;
+      color: var(--muted);
+      padding:8px 10px;
+      border-radius: 12px;
+      border:1px solid transparent;
+    }
+    nav a:hover{
+      color:var(--text);
+      border-color: var(--line);
+      background: rgba(255,255,255,.03);
+    }
+
+    .cta{
+      display:flex; align-items:center; gap:10px;
+      min-width: 220px;
+      justify-content:flex-end;
+    }
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:10px;
+      padding:10px 14px;
+      border-radius: 14px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color:var(--text);
+      font-size:13px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .btn:hover{background: rgba(255,255,255,.06)}
+    .btn.primary{
+      border-color: rgba(52,211,153,.35);
+      background: linear-gradient(135deg, rgba(52,211,153,.22), rgba(6,182,212,.14));
+    }
+    .btn.primary:hover{
+      border-color: rgba(52,211,153,.55);
+      background: linear-gradient(135deg, rgba(52,211,153,.28), rgba(6,182,212,.18));
+    }
+
+    /* Hero */
+    .hero{
+      padding: 68px 0 28px;
+    }
+    .heroGrid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 22px;
+      align-items:stretch;
+    }
+    .heroCard{
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px;
+      position:relative;
+      overflow:hidden;
+    }
+    .badge{
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(15,22,32,.55);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .dot{
+      width:10px; height:10px; border-radius:50%;
+      background: radial-gradient(circle at 30% 30%, var(--accent3), var(--accent1));
+      box-shadow: 0 0 0 6px rgba(52,211,153,.12);
+    }
+    .heroTitle{
+      margin:16px 0 10px;
+      font-size: clamp(34px, 4.2vw, 54px);
+      line-height:1.06;
+      letter-spacing:-.02em;
+    }
+    .heroTitle span{
+      background: linear-gradient(90deg, var(--accent3), var(--accent1), var(--accent2));
+      -webkit-background-clip:text;
+      background-clip:text;
+      color: transparent;
+    }
+    .heroText{
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 15px;
+      max-width: 62ch;
+    }
+    .heroActions{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top: 18px;
+    }
+    .mini{
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 12px;
+    }
+
+    .sideCard{
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(15,22,32,.78), rgba(12,18,26,.72));
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow);
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      position:relative;
+      overflow:hidden;
+    }
+    .metric{
+      padding:14px;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.02);
+    }
+    .metric .k{
+      font-size: 12px; color: var(--muted);
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px;
+    }
+    .metric .v{
+      margin-top: 8px;
+      font-size: 20px; letter-spacing:-.01em;
+    }
+    .pill{
+      font-size:11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border:1px solid rgba(52,211,153,.25);
+      color: rgba(220,255,245,.95);
+      background: rgba(52,211,153,.10);
+    }
+    .pill.cyan{
+      border-color: rgba(6,182,212,.25);
+      background: rgba(6,182,212,.10);
+    }
+
+    /* Sections */
+    section{padding: 34px 0}
+    .sectionTitle{
+      font-size: 22px;
+      margin: 0 0 10px;
+      letter-spacing:-.01em;
+    }
+    .sectionLead{
+      margin: 0 0 22px;
+      color: var(--muted);
+      max-width: 80ch;
+    }
+
+    .grid3{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .card{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.02);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.25);
+    }
+    .card h3{
+      margin: 0 0 8px;
+      font-size: 14px;
+      letter-spacing:.08em;
+      text-transform: uppercase;
+      color: rgba(232,238,247,.92);
+    }
+    .card p{
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .flow{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:16px;
+    }
+    .step{
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));
+      border-radius: var(--radius);
+      padding: 18px;
+      position:relative;
+      overflow:hidden;
+    }
+    .step .num{
+      width:34px; height:34px; border-radius: 12px;
+      display:flex; align-items:center; justify-content:center;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(15,22,32,.55);
+      color: rgba(232,238,247,.9);
+      font-size: 13px;
+    }
+    .step h4{margin: 12px 0 6px; font-size: 16px}
+    .step p{margin:0; color: var(--muted); font-size:14px}
+
+    .ethics{
+      border:1px solid rgba(52,211,153,.22);
+      background: linear-gradient(135deg, rgba(52,211,153,.08), rgba(6,182,212,.06));
+      border-radius: var(--radius);
+      padding: 18px;
+      display:flex;
+      align-items:flex-start;
+      gap:14px;
+    }
+    .shield{
+      width:46px; height:46px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.10);
+      display:flex; align-items:center; justify-content:center;
+      flex:0 0 auto;
+    }
+    .ethics ul{
+      margin: 8px 0 0 18px;
+      color: var(--muted);
+      padding:0;
+    }
+    .ethics li{margin: 6px 0}
+
+    footer{
+      padding: 34px 0 46px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .footgrid{
+      display:flex;
+      justify-content:space-between;
+      gap:18px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      padding: 6px 8px;
+      border-radius: 12px;
+      color: rgba(232,238,247,.85);
+      font-size:12px;
+    }
+
+    /* Responsive */
+    @media (max-width: 920px){
+      .heroGrid{grid-template-columns: 1fr}
+      .cta{display:none}
+      nav{justify-content:flex-end}
+      .grid3{grid-template-columns: 1fr}
+      .flow{grid-template-columns: 1fr}
+      .brand{min-width:auto}
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Inline SVG Logo Symbol (re-used in header + hero) -->
+  <svg width="0" height="0" style="position:absolute">
+    <defs>
+      <radialGradient id="gradA" cx="30%" cy="25%" r="80%">
+        <stop offset="0" stop-color="#A7F3D0"></stop>
+        <stop offset="0.55" stop-color="#34D399"></stop>
+        <stop offset="1" stop-color="#06B6D4"></stop>
+      </radialGradient>
+    </defs>
+  </svg>
+
+  <header>
+    <div class="container">
+      <div class="topbar">
+        <a class="brand" href="#top" aria-label="120LAB Home">
+          <svg class="logo" viewBox="0 0 64 64" role="img" aria-label="120LAB logo">
+            <rect width="64" height="64" rx="16" fill="#0b0f14"></rect>
+            <!-- Lens / orbit -->
+            <path d="M18 22c10-10 18-10 28 0c4 4 6 9 6 14c0 5-2 10-6 14c-10 10-18 10-28 0c-4-4-6-9-6-14c0-5 2-10 6-14Z"
+              fill="none" stroke="url(#gradA)" stroke-width="3.2" stroke-linecap="round"></path>
+            <!-- Impact pulse -->
+            <path d="M22 34h7l3-8l5 18l3-10h6"
+              fill="none" stroke="#E6FFFB" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+          <div>
+            <h1>120LAB</h1>
+            <p class="sub">Human as Value • On-chain Impact</p>
+          </div>
+        </a>
+
+        <nav aria-label="Primary">
+          <a href="#vision">Vision</a>
+          <a href="#how">How it Works</a>
+          <a href="#ethics">Ethics</a>
+          <a href="#token">On-chain Value</a>
+        </nav>
+
+        <div class="cta">
+          <a class="btn" href="#token">Read the Protocol</a>
+          <a class="btn primary" href="#contact">Join Early Access</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <div class="container hero">
+      <div class="heroGrid">
+        <div class="heroCard">
+          <div class="badge">
+            <span class="dot" aria-hidden="true"></span>
+            <span>Promote <b>health span</b> & <b>wealth growth</b> globally</span>
+          </div>
+
+          <h2 class="heroTitle">
+            Turn <span>real human activity</span><br/>
+            into verifiable on-chain value.
+          </h2>
+
+          <p class="heroText">
+            120LAB tracks opt-in daily actions using AI glasses, identifies measurable benefit to
+            humanity and Earth, and issues crypto value on-chain through proof of positive impact.
+          </p>
+
+          <div class="heroActions">
+            <a class="btn primary" href="#how">See how it works</a>
+            <a class="btn" href="#ethics">Privacy & safeguards</a>
+            <button class="btn" type="button" onclick="copyEmail()">Contact</button>
+          </div>
+
+          <p class="mini">
+            Domain: <span class="kbd">120lab.org</span> • Concept: <span class="kbd">Human as Value</span>
+          </p>
+        </div>
+
+        <aside class="sideCard" aria-label="Key pillars">
+          <div class="metric">
+            <div class="k">
+              <span>Impact Signals</span>
+              <span class="pill">AI Glasses</span>
+            </div>
+            <div class="v">Proof of Beneficial Action</div>
+          </div>
+
+          <div class="metric">
+            <div class="k">
+              <span>Human Value Score</span>
+              <span class="pill cyan">Anti-Gaming</span>
+            </div>
+            <div class="v">Dynamic + time-weighted</div>
+          </div>
+
+          <div class="metric">
+            <div class="k">
+              <span>On-chain Value</span>
+              <span class="pill">Auditable</span>
+            </div>
+            <div class="v">Minted from verified impact</div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <section id="vision">
+      <div class="container">
+        <h2 class="sectionTitle">Vision</h2>
+        <p class="sectionLead">
+          A new global value system where <b>beneficial behavior compounds</b>.
+          AI makes impact measurable. Blockchain makes it ownable.
+        </p>
+
+        <div class="grid3">
+          <div class="card">
+            <h3>Health Span</h3>
+            <p>Reward actions that strengthen long-term physical & mental resilience—habits that extend quality of life.</p>
+          </div>
+          <div class="card">
+            <h3>Wealth Growth</h3>
+            <p>Create an economy where value is earned by contribution—not extraction, hype, or harm.</p>
+          </div>
+          <div class="card">
+            <h3>Earth Benefit</h3>
+            <p>Align incentives with sustainability through measurable reductions in waste and positive ecological behavior.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="how">
+      <div class="container">
+        <h2 class="sectionTitle">How it Works</h2>
+        <p class="sectionLead">
+          Four layers: real-world capture → AI verification → scoring → minting. No raw video on-chain.
+        </p>
+
+        <div class="flow">
+          <div class="step">
+            <div class="num">1</div>
+            <h4>AI Glasses (Input Layer)</h4>
+            <p>Opt-in, first-person sensing to understand actions in context (movement, work, learning, environmental choices).</p>
+          </div>
+
+          <div class="step">
+            <div class="num">2</div>
+            <h4>Impact Intelligence (AI Layer)</h4>
+            <p>Models classify “impact primitives” and create <b>Proof of Beneficial Action</b>—a privacy-safe impact signal.</p>
+          </div>
+
+          <div class="step">
+            <div class="num">3</div>
+            <h4>Human Value Score (Scoring)</h4>
+            <p>Time-weighted, decay-aware scoring that reduces gaming and rewards consistent contribution over time.</p>
+          </div>
+
+          <div class="step">
+            <div class="num">4</div>
+            <h4>On-Chain Minting (Value Layer)</h4>
+            <p>Verified impact is recorded and rewarded on-chain (reputation + reward tokens, or a hybrid model).</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="ethics">
+      <div class="container">
+        <h2 class="sectionTitle">Ethics & Safeguards</h2>
+        <p class="sectionLead">
+          This idea only works if it is privacy-first, user-sovereign, and auditable.
+        </p>
+
+        <div class="ethics">
+          <div class="shield" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2l8 4v6c0 6-4 10-8 10S4 18 4 12V6l8-4Z" stroke="url(#gradA)" stroke-width="2" />
+              <path d="M9 12l2 2l4-5" stroke="#E6FFFB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <b>Privacy & trust principles</b>
+            <ul>
+              <li><b>Opt-in only</b> with clear consent and controls.</li>
+              <li><b>Local processing</b> where possible; minimize data leaving the device.</li>
+              <li><b>No raw video on-chain</b>; only hashed / abstracted impact proofs.</li>
+              <li><b>Transparent scoring</b> + independent audits of models and contracts.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="token">
+      <div class="container">
+        <h2 class="sectionTitle">On-chain Value</h2>
+        <p class="sectionLead">
+          120LAB can support multiple token architectures depending on regulation and product direction.
+        </p>
+
+        <div class="grid3">
+          <div class="card">
+            <h3>Reputation (SBT)</h3>
+            <p>Non-transferable identity/reputation for impact history. Best for trust, credentials, and access.</p>
+          </div>
+          <div class="card">
+            <h3>Rewards (Token)</h3>
+            <p>Transferable token minted from verified positive impact. Best for incentives and market dynamics.</p>
+          </div>
+          <div class="card">
+            <h3>Hybrid Model</h3>
+            <p>Reputation anchors the human identity; rewards provide liquidity—while reducing farming and fraud.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact">
+      <div class="container">
+        <h2 class="sectionTitle">Contact</h2>
+        <p class="sectionLead">
+          Put your email below inside the HTML (search for <span class="kbd">YOUR_EMAIL@DOMAIN.COM</span>) and deploy anywhere.
+        </p>
+
+        <div class="card">
+          <h3>Deploy</h3>
+          <p>
+            Save this file as <span class="kbd">index.html</span> and upload to your hosting (GitHub Pages / Cloudflare Pages / Netlify).
+            Your logo + favicon are already included inline.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footgrid">
+        <div>
+          <b style="color:rgba(232,238,247,.9)">120LAB</b> — Human as Value • 120lab.org
+          <div style="margin-top:6px">© <span id="year"></span> • All rights reserved.</div>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end">
+          <span class="kbd">AI Glasses</span>
+          <span class="kbd">Impact Proof</span>
+          <span class="kbd">On-chain Value</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Set year
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    // Replace this with your real email if you want the Contact button to copy it
+    const CONTACT_EMAIL = "YOUR_EMAIL@DOMAIN.COM";
+
+    function copyEmail(){
+      if(CONTACT_EMAIL.includes("YOUR_EMAIL")){
+        alert("Edit CONTACT_EMAIL in the HTML first (search for YOUR_EMAIL@DOMAIN.COM).");
+        return;
+      }
+      navigator.clipboard.writeText(CONTACT_EMAIL)
+        .then(()=> alert("Email copied: " + CONTACT_EMAIL))
+        .catch(()=> alert("Couldn't copy automatically. Email: " + CONTACT_EMAIL));
+    }
+  </script>
+</body>
+</html>
