@@ -4,7 +4,7 @@
 document.getElementById("year").textContent = new Date().getFullYear();
 
 // 2) Replace with your real email
-const CONTACT_EMAIL = "YOUR_EMAIL@DOMAIN.COM";
+const CONTACT_EMAIL = "community@120lab.org";
 
 // 3) Copy-to-clipboard for Contact button
 const copyBtn = document.getElementById("copyContactBtn");
